@@ -48,5 +48,5 @@ format (year, authors) = "=== " ++ year ++ " ===\n" ++
 
 main :: IO ()
 main = do
-  s <- readProcess "git" ["log", "--pretty=format:(\"%aN\",\"%ai\")"] []
+  s <- readProcess "git" ["log", "--no-merges", "--pretty=format:(\"%aN\",\"%ai\")"] []
   mapM_ (putStrLn . format) $ group . parse $ s
