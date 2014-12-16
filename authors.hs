@@ -1,26 +1,27 @@
 #!/usr/bin/env runhaskell
 
 import Control.Arrow ((&&&))
-import System.Process (readProcess)
+import Data.List (genericLength)
+import Data.Monoid (Sum(..))
 import GHC.Exts (groupWith, sortWith)
+import System.Process (readProcess)
 
 type Name = String
-type Year = String
-type Count = Int
+type Year = Integer
 
 type Commit = (Name, Year)
-type Author = (Name, Count)
+type Author = (Name, Sum Integer)
 
 groupByFst :: (Ord a) => [(a, b)] -> [(a, [b])]
 groupByFst = map (fst . head &&& map snd) . groupWith fst
 
 parse :: String -> [Commit]
-parse gitlog = map parseCommit $ lines gitlog
+parse = map parseCommit . lines
   where
     parseCommit s = (author, parseYear date)
       where
         (author, date) = read s
-        parseYear = takeWhile $ not . (== '-')
+        parseYear = read . takeWhile (/= '-')
 
 group :: [Commit] -> [(Year, [Author])]
 group = map (fmap sortAuthors) . groupByYear . map authorStats . groupByName
@@ -31,7 +32,7 @@ group = map (fmap sortAuthors) . groupByYear . map authorStats . groupByName
     authorStats :: (Name, [Year]) -> (Year, Author)
     authorStats (name, years) = (lastYear, (name, commitCount))
       where lastYear = maximum years
-            commitCount = length years
+            commitCount = genericLength years
 
     -- Most active contributor first, alphabetical on equal commit count.
     -- > sortAuthors [("C", 5), ("A", 4), ("B", 5)]
@@ -40,10 +41,11 @@ group = map (fmap sortAuthors) . groupByYear . map authorStats . groupByName
     sortAuthors = reverse . sortWith snd . reverse . sortWith fst
 
 formatAuthor :: Author -> String
-formatAuthor (name, count) = " * " ++ name ++ " (" ++ (show count) ++ ")"
+formatAuthor (name, count) =
+  " * " ++ name ++ " (" ++ show (getSum count) ++ ")"
 
 format :: (Year, [Author]) -> String
-format (year, authors) = "=== " ++ year ++ " ===\n" ++
+format (year, authors) = "=== " ++ show year ++ " ===\n" ++
                                          (unlines . map formatAuthor) authors
 
 main :: IO ()
