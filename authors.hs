@@ -70,25 +70,27 @@ formatAuthors (year, authors) = "=== " ++ show year ++ " ===\n" ++
 formatYear :: (Year, Sum Integer) -> String
 formatYear (year, Sum n) = show year ++ " " ++ show n
 
+-- TODO. This should go somewhere else.
 misAttributedCommits = [
-      ("Brian McKenna", 2015) -- erikd D600, January
-    , ("Zejun Wu", 2015) -- simonmar D974, June
-    , ("Bernard Desmyter", 2015) -- thomie D971, June
-    , ("John Paul Adrian Glaubitz", 2015) -- slyfox #11209
+      ("David Feuer", 2014) -- nomeata, D322, d14d3f9, October 2014
+    , ("Brian McKenna", 2015) -- erikd, D600, 228902a, January 2015
+    , ("Zejun Wu", 2015) -- simonmar, D974, d20031d, June 2015
+    , ("Bernard Desmyter", 2015) -- thomie, D971, 0db0ac4, June 2015
+    , ("John Paul Adrian Glaubitz", 2015) -- slyfox, #11209, f48015b, December 2015
     ]
 
 main :: IO ()
 main = do
-  s <- readProcess "git" ["log", "--no-merges", "--pretty=format:(\"%aN\",\"%ai\")"] []
+  s <- readProcess "git" ["log", "--no-merges", "--pretty=format:(\"%aN\",\"%ci\")"] []
   let p = parse s ++ misAttributedCommits
 
   -- list
   --mapM_ print (parse s)
 
-  putStrLn ""
-  putStrLn "Contributors, listed by year of first commit"
-  putStrLn ""
-  mapM_ (putStrLn . formatAuthors) $ authorsByYear True $ p
+  --putStrLn ""
+  --putStrLn "Contributors, listed by year of first commit"
+  --putStrLn ""
+  --mapM_ (putStrLn . formatAuthors) $ authorsByYear True $ p
 
   putStrLn ""
   putStrLn "Contributors, listed by year of last commit"
